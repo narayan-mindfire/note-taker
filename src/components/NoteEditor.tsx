@@ -8,6 +8,7 @@ interface NoteImage {
   url: string;
   x: number;
   y: number;
+  width?: number;
 }
 
 interface NoteEditorProps {
@@ -49,7 +50,8 @@ export default function NoteEditor({ noteId, initialTitle, initialContent, initi
         id: crypto.randomUUID(),
         url,
         x: Math.random() * 100 + 50,
-        y: Math.random() * 100 + 50
+        y: Math.random() * 100 + 50,
+        width: 250
       };
       
       setImages([...images, newImage]);
@@ -59,6 +61,12 @@ export default function NoteEditor({ noteId, initialTitle, initialContent, initi
   const handleDragEnd = (id: string, info: any) => {
     setImages(images.map(img => 
       img.id === id ? { ...img, x: img.x + info.offset.x, y: img.y + info.offset.y } : img
+    ));
+  };
+
+  const handleResize = (id: string, newWidth: number) => {
+    setImages(images.map(img => 
+      img.id === id ? { ...img, width: newWidth } : img
     ));
   };
 
@@ -128,16 +136,50 @@ export default function NoteEditor({ noteId, initialTitle, initialContent, initi
             onDragEnd={(_, info) => handleDragEnd(img.id, info)}
             initial={{ x: img.x, y: img.y }}
             className="absolute z-20 cursor-move group"
-            style={{ width: '200px' }}
+            style={{ width: img.width || 250 }}
           >
-            <div className="relative rounded-xl shadow-xl overflow-hidden border border-gray-200/50 bg-white p-1 md:p-1.5 hover:shadow-2xl transition-shadow">
+            <div className="relative rounded-xl shadow-xl border border-gray-200/50 bg-white p-1 md:p-1.5 hover:shadow-2xl transition-shadow flex flex-col">
               <button 
                 onClick={() => removeImage(img.id)}
-                className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 text-red-600 p-1 md:p-1.5 rounded-lg opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+                className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 text-red-600 p-1 md:p-1.5 rounded-lg opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 z-10"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
-              <img src={img.url} alt="Note attachment" className="w-full h-auto rounded-lg pointer-events-none" />
+              <img src={img.url} alt="Note attachment" className="w-full h-auto rounded-lg pointer-events-none select-none" draggable={false} />
+              
+              {/* Resize Handle */}
+              <div 
+                className="absolute bottom-0 right-0 w-6 h-6 cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-end p-1.5 z-10"
+                onPointerDown={(e) => {
+                  e.stopPropagation(); // Stop framer-motion drag
+                  const startX = e.clientX;
+                  const startWidth = img.width || 250;
+                  
+                  const onPointerMove = (moveEvent: PointerEvent) => {
+                    // We directly mutate the DOM width for smooth 60fps resizing without React re-renders
+                    const newWidth = Math.max(100, startWidth + (moveEvent.clientX - startX));
+                    const parent = (e.target as HTMLElement).closest('.group') as HTMLElement;
+                    if (parent) {
+                      parent.style.width = `${newWidth}px`;
+                    }
+                  };
+                  
+                  const onPointerUp = (upEvent: PointerEvent) => {
+                    window.removeEventListener('pointermove', onPointerMove);
+                    window.removeEventListener('pointerup', onPointerUp);
+                    const finalWidth = Math.max(100, startWidth + (upEvent.clientX - startX));
+                    handleResize(img.id, finalWidth);
+                  };
+                  
+                  window.addEventListener('pointermove', onPointerMove);
+                  window.addEventListener('pointerup', onPointerUp);
+                }}
+              >
+                <svg className="w-3 h-3 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15L15 21" />
+                  <path d="M21 8L8 21" />
+                </svg>
+              </div>
             </div>
           </motion.div>
         ))}
