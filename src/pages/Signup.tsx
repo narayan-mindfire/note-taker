@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
+import AuthLayout from '../layouts/AuthLayout';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -20,51 +23,43 @@ export default function Signup() {
       setError(error.message);
       setLoading(false);
     } else {
-      // Typically need to check email for confirmation, but we'll navigate assuming they either auto-login or can login right away
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">Create an Account</h2>
-        
-        {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{error}</div>}
-        
-        <form onSubmit={handleSignup} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 disabled:opacity-50 transition-colors"
-          >
-            {loading ? 'Signing up...' : 'Sign Up'}
-          </button>
-        </form>
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
-        </p>
-      </div>
-    </div>
+    <AuthLayout title="Create an account">
+      {error && (
+        <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm border border-red-100 flex items-start gap-2">
+          <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          {error}
+        </div>
+      )}
+      
+      <form onSubmit={handleSignup} className="space-y-5">
+        <Input
+          label="Email address"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          required
+        />
+        <Input
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          required
+        />
+        <Button type="submit" className="w-full mt-2" isLoading={loading}>
+          Create account
+        </Button>
+      </form>
+      <p className="mt-8 text-center text-sm text-gray-500">
+        Already have an account? <Link to="/login" className="text-blue-600 font-medium hover:text-blue-700 hover:underline transition-colors">Log in</Link>
+      </p>
+    </AuthLayout>
   );
 }
