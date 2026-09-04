@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, FileText, LogOut } from 'lucide-react';
+import { Search, Plus, FileText, LogOut, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from './ui/Button';
 
@@ -13,9 +13,11 @@ interface SidebarProps {
   activeNoteId: string | null;
   onSelectNote: (id: string) => void;
   onNewNote: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export default function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote }: SidebarProps) {
+export default function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, isOpen, onClose }: SidebarProps) {
   const [search, setSearch] = useState('');
   const { signOut } = useAuth();
 
@@ -24,16 +26,25 @@ export default function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote }
   );
 
   return (
-    <div className="w-72 bg-white flex flex-col h-screen border-r border-gray-200 shadow-sm">
+    <div className={`
+      fixed inset-y-0 left-0 z-50 w-72 bg-white flex flex-col h-screen border-r border-gray-200 shadow-xl md:shadow-sm
+      transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0
+      ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+    `}>
       <div className="p-5 border-b border-gray-100 flex-shrink-0">
-        <h1 className="text-gray-900 font-bold text-xl mb-5 flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
-            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </div>
-          Note Taker
-        </h1>
+        <div className="flex items-center justify-between mb-5">
+          <h1 className="text-gray-900 font-bold text-xl flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
+            Note Taker
+          </h1>
+          <button onClick={onClose} className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
         <div className="relative group">
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
           <input

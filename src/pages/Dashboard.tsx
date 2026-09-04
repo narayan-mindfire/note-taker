@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -32,6 +33,7 @@ export default function Dashboard() {
 
     if (!error && data) {
       setNotes(data);
+      if (data.length > 0) setActiveNoteId(data[0].id);
     }
     setLoading(false);
   };
@@ -50,6 +52,7 @@ export default function Dashboard() {
     if (!error && data) {
       setNotes([data, ...notes]);
       setActiveNoteId(data.id);
+      setIsSidebarOpen(false);
     }
   };
 
@@ -69,13 +72,27 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-gray-50 overflow-hidden relative">
+      {/* Mobile backdrop */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-gray-900/50 z-40 md:hidden transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      
       <Sidebar 
         notes={notes} 
         activeNoteId={activeNoteId}
-        onSelectNote={setActiveNoteId}
+        onSelectNote={(id) => {
+          setActiveNoteId(id);
+          setIsSidebarOpen(false);
+        }}
         onNewNote={handleNewNote}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
+      
       {activeNote ? (
         <NoteEditor 
           key={activeNote.id}
@@ -84,9 +101,16 @@ export default function Dashboard() {
           initialContent={activeNote.content || ''}
           initialImages={activeNote.images || []}
           onUpdate={(updates) => handleUpdateNote(activeNote.id, updates)}
+          onMenuClick={() => setIsSidebarOpen(true)}
         />
       ) : (
-        <div className="flex-1 flex items-center justify-center text-gray-500">
+        <div className="flex-1 flex flex-col items-center justify-center text-gray-500 bg-white">
+          <button 
+            onClick={() => setIsSidebarOpen(true)}
+            className="md:hidden mb-4 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg"
+          >
+            Open Notes List
+          </button>
           Select a note or create a new one
         </div>
       )}
