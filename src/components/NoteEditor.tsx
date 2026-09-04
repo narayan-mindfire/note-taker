@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Image as ImageIcon, Trash2 } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -39,7 +39,7 @@ export default function NoteEditor({ noteId, initialTitle, initialContent, initi
     onUpdate({ images });
   }, [images]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const url = URL.createObjectURL(file); // Temporary object URL

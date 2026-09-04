@@ -1,6 +1,6 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 
-export default function AuthLayout({ children, title }: { children: React.ReactNode, title: string }) {
+export default function AuthLayout({ children, title }: { children: ReactNode, title: string }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50/50 p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
