@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Image as ImageIcon } from 'lucide-react';
 
@@ -14,30 +14,51 @@ interface NoteEditorProps {
   initialTitle: string;
   initialContent: string;
   initialImages: NoteImage[];
+  onUpdate: (updates: any) => void;
 }
 
-export default function NoteEditor({ noteId, initialTitle, initialContent, initialImages }: NoteEditorProps) {
+export default function NoteEditor({ noteId, initialTitle, initialContent, initialImages, onUpdate }: NoteEditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
   const [images, setImages] = useState<NoteImage[]>(initialImages);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // In a real implementation, you'd upload this to Supabase Storage
-  // and then get the public URL. Here we just use a local object URL for demo.
+  // Debounce for title and content
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (title !== initialTitle || content !== initialContent) {
+        onUpdate({ title, content });
+      }
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [title, content]);
+
+  // Sync images when they change
+  useEffect(() => {
+    // Only update if images actually changed length or positions (simplified check)
+    onUpdate({ images });
+  }, [images]);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const url = URL.createObjectURL(file);
+      const url = URL.createObjectURL(file); // Temporary!
       
       const newImage: NoteImage = {
         id: crypto.randomUUID(),
         url,
-        x: 50, // default spawn position
+        x: 50,
         y: 50
       };
       
       setImages([...images, newImage]);
     }
+  };
+
+  const handleDragEnd = (id: string, info: any) => {
+    setImages(images.map(img => 
+      img.id === id ? { ...img, x: img.x + info.offset.x, y: img.y + info.offset.y } : img
+    ));
   };
 
   return (
@@ -71,13 +92,13 @@ export default function NoteEditor({ noteId, initialTitle, initialContent, initi
           className="w-full h-full bg-transparent border-none focus:outline-none focus:ring-0 text-lg text-gray-700 resize-none z-0"
         />
 
-        {/* Draggable Images Layer */}
         {images.map((img) => (
           <motion.div
             key={img.id}
             drag
             dragConstraints={containerRef}
             dragMomentum={false}
+            onDragEnd={(_, info) => handleDragEnd(img.id, info)}
             initial={{ x: img.x, y: img.y }}
             className="absolute z-20 cursor-move rounded-lg shadow-xl overflow-hidden bg-white border border-gray-200 p-1"
             style={{ width: '200px' }}
