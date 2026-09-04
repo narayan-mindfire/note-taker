@@ -29,5 +29,10 @@ create policy "Users can delete their own notes"
   on public.notes for delete
   using ( auth.uid() = user_id );
 
+-- Explicitly grant permissions to the roles that Supabase uses for the API
+GRANT ALL ON TABLE public.notes TO authenticated;
+GRANT ALL ON TABLE public.notes TO anon;
+GRANT ALL ON TABLE public.notes TO service_role;
+
 -- Reload schema cache to fix PGRST205 errors
 NOTIFY pgrst, 'reload schema';
