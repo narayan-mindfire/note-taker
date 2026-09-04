@@ -28,3 +28,6 @@ create policy "Users can update their own notes"
 create policy "Users can delete their own notes"
   on public.notes for delete
   using ( auth.uid() = user_id );
+
+-- Reload schema cache to fix PGRST205 errors
+NOTIFY pgrst, 'reload schema';
