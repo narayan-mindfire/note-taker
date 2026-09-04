@@ -17,3 +17,4 @@ export default function AuthLayout({ children, title }: { children: React.ReactN
     </div>
   );
 }
+

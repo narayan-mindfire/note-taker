@@ -1,4 +1,4 @@
-import React, { ButtonHTMLAttributes } from 'react';
+import React, { type ButtonHTMLAttributes } from 'react';
 import { Loader2 } from 'lucide-react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -39,3 +39,4 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
+
